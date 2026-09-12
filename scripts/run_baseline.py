@@ -7,6 +7,8 @@ Usage:
     python scripts/run_baseline.py configs/baseline_6class_mobilenetv3.yaml
     python scripts/run_baseline.py configs/baseline_6class_mobilenetv3.yaml --limit-per-class 200 --run smoke
     python scripts/run_baseline.py configs/baseline_6class_mobilenetv3.yaml --skip-download --skip-preprocess
+    # Fast offline check (no download, 2 epochs, random init):
+    python scripts/run_baseline.py configs/baseline_6class_mobilenetv3.yaml --skip-download --skip-preprocess --max-epochs 2 --no-pretrained --run verify
 """
 
 import argparse
@@ -30,10 +32,24 @@ def main() -> None:
     ap.add_argument("--skip-download", action="store_true")
     ap.add_argument("--skip-preprocess", action="store_true")
     ap.add_argument("--skip-onnx", action="store_true")
+    ap.add_argument("--max-epochs", type=int, default=None,
+                    help="Override cfg.training.max_epochs (e.g. 2 for a fast verify pass).")
+    ap.add_argument("--batch-size", type=int, default=None)
+    ap.add_argument("--no-pretrained", action="store_true",
+                    help="Random init instead of ImageNet weights (offline / CI environments).")
     args = ap.parse_args()
 
     logging.basicConfig(level=logging.INFO, format="%(message)s")
-    cfg = load_config(PROJECT_ROOT / "configs" / args.config)
+    cfg_path = Path(args.config)
+    if not cfg_path.exists():
+        cfg_path = PROJECT_ROOT / "configs" / cfg_path.name
+    cfg = load_config(cfg_path)
+    if args.max_epochs is not None:
+        cfg.training.max_epochs = args.max_epochs
+    if args.batch_size is not None:
+        cfg.training.batch_size = args.batch_size
+    if args.no_pretrained:
+        cfg.model.pretrained = False
 
     from src.data.download_dataset import download_and_extract
     from src.data.preprocess import run_preprocessing

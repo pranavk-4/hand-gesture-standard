@@ -14,8 +14,10 @@ opset/simplify breakages the optimization track is hunting.
 
 import argparse
 import hashlib
+import io
 import json
 import logging
+from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 
 import torch
@@ -43,6 +45,18 @@ def export_onnx(cfg, run_name: str, opset: int = 17) -> dict:
     num_classes = len(cfg.dataset.class_names)
     image_size = cfg.preprocessing.image_size
 
+    # A previous export's onnxruntime session can keep model.onnx.data
+    # memory-mapped on Windows, making overwrite fail with Errno 22.
+    # Remove stale outputs first so failures are loud here, not cryptic
+    # deep inside the exporter.
+    for stale in (onnx_path, onnx_path.with_suffix(".onnx.data")):
+        try:
+            if stale.exists():
+                stale.unlink()
+        except OSError:
+            logger.exception("Cannot remove stale %s — is another process/session holding it?", stale)
+            raise
+
     model = build_model(architecture, num_classes=num_classes, pretrained=False)
     ckpt = torch.load(ckpt_path, map_location="cpu")
     model.load_state_dict(ckpt["model_state_dict"])
@@ -52,20 +66,31 @@ def export_onnx(cfg, run_name: str, opset: int = 17) -> dict:
     with torch.no_grad():
         torch_out = model(dummy).numpy()
 
-    torch.onnx.export(
-        model, dummy, str(onnx_path),
-        input_names=["input"], output_names=["logits"],
-        dynamic_axes={"input": {0: "batch"}, "logits": {0: "batch"}},
-        opset_version=opset,
-    )
+    # torch.onnx prints unicode status glyphs (e.g. ✅) that crash Windows
+    # cp1252 consoles / wandb console capture with UnicodeEncodeError — a
+    # console bug, not a model bug. Swallow exporter chatter; real errors
+    # still raise through.
+    with redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
+        torch.onnx.export(
+            model, dummy, str(onnx_path),
+            input_names=["input"], output_names=["logits"],
+            dynamic_axes={"input": {0: "batch"}, "logits": {0: "batch"}},
+            opset_version=opset,
+        )
 
     # Verify parity torch vs onnxruntime.
     try:
+        import gc
+
         import numpy as np
         import onnxruntime as ort
         sess = ort.InferenceSession(str(onnx_path), providers=["CPUExecutionProvider"])
         ort_out = sess.run(None, {"input": dummy.numpy()})[0]
         max_err = float(np.abs(torch_out - ort_out).max())
+        # Release the session's handle on model.onnx(.data) promptly:
+        # on Windows an open handle blocks the next export's overwrite.
+        del sess
+        gc.collect()
     except ImportError:
         max_err = None
         logger.warning("onnxruntime not installed — skipping parity check.")
@@ -96,5 +121,8 @@ if __name__ == "__main__":
     ap.add_argument("--run", default="baseline")
     ap.add_argument("--opset", type=int, default=17)
     args = ap.parse_args()
-    cfg = load_config(PROJECT_ROOT / "configs" / args.config)
+    cfg_path = Path(args.config)
+    if not cfg_path.exists():
+        cfg_path = PROJECT_ROOT / "configs" / cfg_path.name
+    cfg = load_config(cfg_path)
     export_onnx(cfg, args.run, opset=args.opset)

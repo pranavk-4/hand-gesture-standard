@@ -136,5 +136,8 @@ if __name__ == "__main__":
     ap.add_argument("--config", default="baseline_6class_mobilenetv3.yaml")
     ap.add_argument("--trials", type=int, default=None)
     args = ap.parse_args()
-    cfg = load_config(PROJECT_ROOT / "configs" / args.config)
+    cfg_path = Path(args.config)
+    if not cfg_path.exists():
+        cfg_path = PROJECT_ROOT / "configs" / cfg_path.name
+    cfg = load_config(cfg_path)
     run_hpo(cfg, n_trials=args.trials)

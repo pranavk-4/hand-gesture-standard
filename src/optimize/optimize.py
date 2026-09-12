@@ -67,6 +67,9 @@ def _evaluate_onnx(onnx_path: Path, cfg) -> float:
             pred = int(np.argmax(sess.run(None, {"input": x})[0], axis=1)[0])
             correct += (pred == label)
             total += 1
+    del sess  # release Windows file handle on the .onnx(.data) promptly
+    import gc
+    gc.collect()
     return correct / total if total else 0.0
 
 
@@ -150,5 +153,8 @@ if __name__ == "__main__":
     ap.add_argument("--run", default="baseline")
     ap.add_argument("--toolkit", default="baseline", choices=["baseline", "olive", "aimet", "modelopt"])
     args = ap.parse_args()
-    cfg = load_config(PROJECT_ROOT / "configs" / args.config)
+    cfg_path = Path(args.config)
+    if not cfg_path.exists():
+        cfg_path = PROJECT_ROOT / "configs" / cfg_path.name
+    cfg = load_config(cfg_path)
     print(json.dumps(run_optimize(cfg, args.run, toolkit=args.toolkit), indent=2))

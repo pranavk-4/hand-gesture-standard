@@ -102,5 +102,8 @@ if __name__ == "__main__":
     ap.add_argument("--run", default="baseline")
     ap.add_argument("--repeats", type=int, default=100)
     args = ap.parse_args()
-    cfg = load_config(PROJECT_ROOT / "configs" / args.config)
+    cfg_path = Path(args.config)
+    if not cfg_path.exists():
+        cfg_path = PROJECT_ROOT / "configs" / cfg_path.name
+    cfg = load_config(cfg_path)
     offline_profile(cfg, args.run, repeats=args.repeats)
