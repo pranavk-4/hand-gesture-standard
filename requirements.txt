@@ -1,0 +1,19 @@
+torch>=2.0
+torchvision>=0.15
+timm>=0.9
+huggingface_hub>=0.20
+pandas>=2.0
+pyarrow>=14.0
+pillow>=10.0
+scikit-learn>=1.2
+matplotlib>=3.8
+pyyaml>=6.0
+tqdm>=4.65
+pytest>=7.4
+onnx>=1.14
+onnxruntime>=1.16
+
+# Track-specific extras (install only in that worktree):
+# HPO (Hyperband/BOHB): pip install optuna>=3.0
+# Profiling FLOPs (optional, falls back gracefully): pip install thop>=0.1
+# Optimization toolkits: see src/optimize/optimize.py for olive/aimet/nvidia-modelopt pins

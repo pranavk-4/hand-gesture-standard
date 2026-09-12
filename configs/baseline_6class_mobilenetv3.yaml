@@ -1,0 +1,48 @@
+dataset:
+  hf_repo_id: "cj-mills/hagrid-sample-30k-384p"
+  hf_revision: "refs/convert/parquet"
+  hf_filename: ["default/train/0000.parquet", "default/train/0001.parquet"]
+  # STANDARD 6-class subset. Full 18-class source labels are remapped
+  # in src/data/download_dataset.py via FULL_18CLASS_NAMES -> this list.
+  # Do NOT reorder without bumping data_version below.
+  class_names: ["dislike", "fist", "like", "ok", "palm", "peace"]
+  val_fraction: 0.15
+  test_fraction: 0.15
+  random_seed: 42
+  data_version: "v1-6class"
+
+preprocessing:
+  image_size: 224
+  min_pixel_std: 1.0
+
+model:
+  architecture: "mobilenetv3_small_100"
+  pretrained: true
+
+# Frozen baseline recipe. HPO track overrides these via trial params,
+# it does NOT edit this file per-trial (see src/hpo/search_space.yaml).
+training:
+  batch_size: 32
+  max_epochs: 60
+  early_stopping_patience: 12
+  head_lr: 0.001
+  backbone_lr: 0.0001
+  weight_decay: 0.0001
+  warmup_epochs: 3
+  ema_decay: 0.9
+  label_smoothing_value: 0.1
+  num_workers: 2
+  use_amp: true
+  unfreeze_backbone: true
+  warmup: true
+  cosine_schedule: true
+  class_weighted_loss: true
+  label_smoothing: true
+  ema: true
+  differential_lr: true
+  augmentation: false
+
+output:
+  checkpoints_dir: "outputs/mobilenetv3_small/checkpoints"
+  metrics_dir: "outputs/mobilenetv3_small/metrics"
+  plots_dir: "outputs/mobilenetv3_small/plots"

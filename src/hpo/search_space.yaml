@@ -1,0 +1,34 @@
+# HPO search space for Track 1 (Hyperband / BOHB).
+# run_hpo.py reads this file. Keep ranges tight: the baseline is already
+# validated, the platform test is about the SEARCH ALGORITHM, not SOTA.
+search_space:
+  head_lr:
+    type: log_float
+    low: 0.0001
+    high: 0.01
+  backbone_lr:
+    type: log_float
+    low: 0.00001
+    high: 0.001
+  weight_decay:
+    type: log_float
+    low: 0.00001
+    high: 0.001
+  ema_decay:
+    type: float
+    low: 0.85
+    high: 0.999
+
+# Hyperband brackets (successive halving). min/max resource in epochs.
+hyperband:
+  min_resource_epochs: 5
+  max_resource_epochs: 30
+  reduction_factor: 3
+
+# BOHB ~= Optuna TPE sampler + Hyperband pruner. n_trials small on purpose:
+# each trial trains the small mobilenetv3 baseline, ~minutes not hours.
+study:
+  n_trials: 27
+  direction: maximize
+  sampler: tpe
+  pruner: hyperband
