@@ -6,7 +6,7 @@
 
 ## Results (numbers, not adjectives)
 
-## Failures hit + mitigations (link rows in docs/track-*/failures.md)
+## Failures hit + mitigations (logged in the internal task file — link or paste row IDs)
 
 ## Shared-code changes? (needs reviewer)
 - [ ] No shared-code changes
