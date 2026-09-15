@@ -1,0 +1,54 @@
+# HPO max space for manual test. Extends search_space.yaml with all bool flags
+# supported by run_training overrides. No shared code change needed.
+search_space:
+  head_lr:
+    type: log_float
+    low: 0.0001
+    high: 0.01
+  backbone_lr:
+    type: log_float
+    low: 0.00001
+    high: 0.001
+  weight_decay:
+    type: log_float
+    low: 0.00001
+    high: 0.001
+  ema_decay:
+    type: float
+    low: 0.85
+    high: 0.999
+  unfreeze_backbone:
+    type: categorical
+    choices: [true, false]
+  augmentation:
+    type: categorical
+    choices: [true, false]
+  class_weighted_loss:
+    type: categorical
+    choices: [true, false]
+  label_smoothing:
+    type: categorical
+    choices: [true, false]
+  ema:
+    type: categorical
+    choices: [true, false]
+  differential_lr:
+    type: categorical
+    choices: [true, false]
+  cosine_schedule:
+    type: categorical
+    choices: [true, false]
+  warmup:
+    type: categorical
+    choices: [true, false]
+
+hyperband:
+  min_resource_epochs: 5
+  max_resource_epochs: 30
+  reduction_factor: 3
+
+study:
+  n_trials: 6
+  direction: maximize
+  sampler: tpe
+  pruner: hyperband

@@ -1,0 +1,22 @@
+{
+  "n_trials": 6,
+  "n_complete": 5,
+  "n_pruned": 1,
+  "best_value": 0.2916666666666667,
+  "best_params": {
+    "head_lr": 0.001731236464814678,
+    "backbone_lr": 5.798457281674335e-05,
+    "weight_decay": 0.0005715716489674588,
+    "ema_decay": 0.9964486340641252,
+    "unfreeze_backbone": true,
+    "augmentation": true,
+    "class_weighted_loss": true,
+    "label_smoothing": true,
+    "ema": true,
+    "differential_lr": false,
+    "cosine_schedule": false,
+    "warmup": false
+  },
+  "sampler": "tpe",
+  "wall_clock_seconds": 18.015380859375
+}

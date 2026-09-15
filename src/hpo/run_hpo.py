@@ -52,10 +52,11 @@ def _suggest(trial, space: dict) -> dict:
     return params
 
 
-def run_hpo(cfg, n_trials: int | None = None, space_path: Path | None = None) -> dict:
+def run_hpo(cfg, n_trials: int | None = None, space_path: Path | None = None,
+            sampler_name: str | None = None) -> dict:
     import optuna
     from optuna.pruners import HyperbandPruner
-    from optuna.samplers import TPESampler
+    from optuna.samplers import RandomSampler, TPESampler
 
     from src.training.train import run_training
 
@@ -63,13 +64,19 @@ def run_hpo(cfg, n_trials: int | None = None, space_path: Path | None = None) ->
     space = _load_space(space_path)
     hb = space.get("hyperband", {})
     n_trials = n_trials or space.get("study", {}).get("n_trials", 27)
+    sampler_name = sampler_name or space.get("study", {}).get("sampler", "tpe")
 
     pruner = HyperbandPruner(
         min_resource=hb.get("min_resource_epochs", 5),
         max_resource=hb.get("max_resource_epochs", 30),
         reduction_factor=hb.get("reduction_factor", 3),
     )
-    study = optuna.create_study(direction="maximize", sampler=TPESampler(), pruner=pruner)
+    if sampler_name == "random":
+        sampler = RandomSampler()
+    else:
+        sampler = TPESampler()
+    logger.info("HPO sampler=%s pruner=hyperband trials=%s space=%s", sampler_name, n_trials, space_path)
+    study = optuna.create_study(direction="maximize", sampler=sampler, pruner=pruner)
 
     hpo_dir = Path(cfg.output.metrics_dir) / "hpo"
     hpo_dir.mkdir(parents=True, exist_ok=True)
@@ -90,6 +97,10 @@ def run_hpo(cfg, n_trials: int | None = None, space_path: Path | None = None) ->
         budget = rungs[trial.number % len(rungs)]
         summary = run_training(cfg, run_name=f"hpo_trial_{trial.number:03d}",
                                overrides=params, max_epochs_override=budget)
+        trial.set_user_attr("test_accuracy", summary["test_accuracy"])
+        trial.set_user_attr("test_loss", summary["test_loss"])
+        trial.set_user_attr("epochs_trained", summary["epochs_trained"])
+        trial.set_user_attr("budget", budget)
         # Report intermediate values so Hyperband can prune mid-training.
         # (Simplification: report final value at its budget step.)
         trial.report(summary["best_val_accuracy"], step=budget)
@@ -104,6 +115,10 @@ def run_hpo(cfg, n_trials: int | None = None, space_path: Path | None = None) ->
         "state": t.state.name,
         "value": t.value,
         **t.params,
+        "test_accuracy": t.user_attrs.get("test_accuracy"),
+        "test_loss": t.user_attrs.get("test_loss"),
+        "epochs_trained": t.user_attrs.get("epochs_trained"),
+        "budget": t.user_attrs.get("budget"),
     } for t in study.trials]
     with open(hpo_dir / "trials.csv", "w", newline="", encoding="utf-8") as f:
         w = csv.DictWriter(f, fieldnames=list(rows[0].keys()) if rows else ["trial"])
@@ -121,6 +136,7 @@ def run_hpo(cfg, n_trials: int | None = None, space_path: Path | None = None) ->
         "n_pruned": sum(1 for t in study.trials if str(t.state) == "TrialState.PRUNED"),
         "best_value": study.best_value if study.best_trial else None,
         "best_params": best_params,
+        "sampler": sampler_name,
         "wall_clock_seconds": time.time() - t0,
     }
     with open(hpo_dir / "hpo_summary.json", "w", encoding="utf-8") as f:
@@ -135,9 +151,12 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--config", default="baseline_6class_mobilenetv3.yaml")
     ap.add_argument("--trials", type=int, default=None)
+    ap.add_argument("--space", default=None)
+    ap.add_argument("--sampler", choices=["tpe", "random"], default=None)
     args = ap.parse_args()
     cfg_path = Path(args.config)
     if not cfg_path.exists():
         cfg_path = PROJECT_ROOT / "configs" / cfg_path.name
     cfg = load_config(cfg_path)
-    run_hpo(cfg, n_trials=args.trials)
+    space_path = Path(args.space) if args.space else None
+    run_hpo(cfg, n_trials=args.trials, space_path=space_path, sampler_name=args.sampler)
