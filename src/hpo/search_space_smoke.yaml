@@ -1,0 +1,29 @@
+# Smoke comparison space, low param count. Matches proper baseline budget.
+search_space:
+  head_lr:
+    type: log_float
+    low: 0.0001
+    high: 0.01
+  backbone_lr:
+    type: log_float
+    low: 0.00001
+    high: 0.001
+  weight_decay:
+    type: log_float
+    low: 0.00001
+    high: 0.001
+  ema_decay:
+    type: float
+    low: 0.85
+    high: 0.999
+
+hyperband:
+  min_resource_epochs: 5
+  max_resource_epochs: 15
+  reduction_factor: 3
+
+study:
+  n_trials: 6
+  direction: maximize
+  sampler: tpe
+  pruner: hyperband
