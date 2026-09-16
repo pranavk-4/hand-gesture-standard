@@ -1,0 +1,26 @@
+{
+  "tag": "bohb_high",
+  "n_trials": 6,
+  "n_complete": 4,
+  "n_pruned": 2,
+  "best_value": 0.9,
+  "best_params": {
+    "head_lr": 0.0004485173791021584,
+    "backbone_lr": 3.1361422107198905e-05,
+    "weight_decay": 0.0002230728578522988,
+    "ema_decay": 0.8651360811708878,
+    "unfreeze_backbone": true,
+    "augmentation": true,
+    "class_weighted_loss": false,
+    "label_smoothing": false,
+    "ema": false,
+    "differential_lr": false,
+    "cosine_schedule": true,
+    "warmup": true
+  },
+  "sampler": "tpe",
+  "space": "search_space_max",
+  "min_resource_epochs": 5,
+  "max_resource_epochs": 30,
+  "wall_clock_seconds": 2479.4750430583954
+}

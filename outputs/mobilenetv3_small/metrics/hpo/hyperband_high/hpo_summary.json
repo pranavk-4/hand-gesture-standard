@@ -1,0 +1,26 @@
+{
+  "tag": "hyperband_high",
+  "n_trials": 6,
+  "n_complete": 2,
+  "n_pruned": 4,
+  "best_value": 0.8988888888888888,
+  "best_params": {
+    "head_lr": 0.007209969267730716,
+    "backbone_lr": 0.00021066147052590481,
+    "weight_decay": 1.0588634437903298e-05,
+    "ema_decay": 0.8563704158861772,
+    "unfreeze_backbone": true,
+    "augmentation": false,
+    "class_weighted_loss": true,
+    "label_smoothing": true,
+    "ema": true,
+    "differential_lr": true,
+    "cosine_schedule": true,
+    "warmup": true
+  },
+  "sampler": "random",
+  "space": "search_space_max",
+  "min_resource_epochs": 5,
+  "max_resource_epochs": 30,
+  "wall_clock_seconds": 2376.089708328247
+}

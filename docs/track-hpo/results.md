@@ -2,14 +2,17 @@
 
 ## Best config vs baseline
 Proper data 4200 train 900 val 900 test letterbox pretrained baseline 60 epochs: val 0.9022 test 0.8678.
-Best so far is Hyperband low trial 000: val 0.9056 test 0.8811, ahead of baseline by 0.003 val and 0.013 test.
+Best is BOHB low 4-param 6 trials tag bohb_low trial 004: val 0.9111 test 0.8989.
+Beats baseline by 0.009 val and 0.031 test.
 Old smoke numbers are superseded and kept below for history.
-See `outputs/mobilenetv3_small/metrics/hpo/hyperband_low/` per trial summaries.
 
 ## Pruner analysis
 Proper baseline no HPO 60 epochs: val 0.9022 test 0.8678, 1843s.
-Hyperband low 4-param partial 4 of 6 trials: trial_000 val 0.9056 test 0.8811 30ep, trial_001 val 0.7256 test 0.72 30ep, trial_002 val 0.74 test 0.7178 30ep, trial_003 val 0.8933 test 0.8756 25ep early stopped. Trial_004 cut by tool timeout, study csv not yet written.
-Hyperband high, BOHB low, BOHB high on proper data: not yet run. Each full 30 epoch trial costs about 15 min on this GPU, so 6 trials per config is about 90 min.
+Hyperband low 4-param partial 4 of 6 trials: trial_000 val 0.9056 test 0.8811 30ep, trial_001 val 0.7256 test 0.72 30ep, trial_002 val 0.74 test 0.7178 30ep, trial_003 val 0.8933 test 0.8756 25ep early stopped. Trial_004 cut by tool timeout, study csv not written.
+Hyperband high 12-param 6 trials: 2 complete 4 pruned best val 0.8989 test 0.8733.
+BOHB low 4-param 6 trials: 2 complete 4 pruned best val 0.9111 test 0.8989.
+BOHB high 12-param 6 trials: 4 complete 2 pruned best val 0.9 test 0.8889.
+BOHB beats Hyperband at both sizes. Per epoch pruning now prunes 2 to 4 trials per run.
 History on smoke 1200 imgs 15 epochs: baseline val 0.4056 test 0.3889. Hyperband low best val 0.5166 test 0.4889. Hyperband high best val 0.3222 test 0.2944. BOHB low best val 0.55 test 0.5055. BOHB high best val 0.6 test 0.5889. High space only paid with TPE.
 
 ## Platform notes (what the automated HPO must handle)

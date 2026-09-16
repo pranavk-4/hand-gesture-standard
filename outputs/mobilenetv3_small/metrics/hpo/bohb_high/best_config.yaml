@@ -1,0 +1,13 @@
+overrides:
+  augmentation: true
+  backbone_lr: 3.1361422107198905e-05
+  class_weighted_loss: false
+  cosine_schedule: true
+  differential_lr: false
+  ema: false
+  ema_decay: 0.8651360811708878
+  head_lr: 0.0004485173791021584
+  label_smoothing: false
+  unfreeze_backbone: true
+  warmup: true
+  weight_decay: 0.0002230728578522988
