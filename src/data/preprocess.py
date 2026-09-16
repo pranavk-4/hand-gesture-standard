@@ -40,15 +40,22 @@ def _is_valid_image(path, min_pixel_std: float) -> bool:
 
 
 def _load_clean_and_resize(path, size: int) -> Image.Image:
+    """Letterbox to a square `size` canvas: scale the WHOLE image so its long
+    side is `size`, then pad the short side. HaGRID frames the hand anywhere
+    in a room-scale photo and ships no bounding boxes, so the old
+    resize-short-side + center-crop silently cropped hands out of frame
+    (worst on palm/peace/ok). Padding preserves the whole subject with no
+    aspect-ratio distortion — nothing gets clipped."""
     image = Image.open(path)
     image = ImageOps.exif_transpose(image)
     image = image.convert("RGB")
     w, h = image.size
-    scale = size / min(w, h)
-    image = image.resize((round(w * scale), round(h * scale)), Image.BICUBIC)
-    w, h = image.size
-    left, top = (w - size) // 2, (h - size) // 2
-    return image.crop((left, top, left + size, top + size))
+    scale = size / max(w, h)
+    resized = image.resize((round(w * scale), round(h * scale)), Image.BICUBIC)
+    canvas = Image.new("RGB", (size, size), (0, 0, 0))
+    rw, rh = resized.size
+    canvas.paste(resized, ((size - rw) // 2, (size - rh) // 2))
+    return canvas
 
 
 def run_preprocessing(cfg) -> PreprocessReport:

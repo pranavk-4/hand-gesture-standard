@@ -38,6 +38,7 @@ def build_transforms(image_size: int, use_heavy_augmentation: bool = False):
     train_transform = transforms.Compose(train_ops)
 
     eval_transform = transforms.Compose([
+        transforms.Resize(image_size + 32),
         transforms.CenterCrop(image_size),
         transforms.ToTensor(),
         transforms.Normalize(IMAGENET_MEAN, IMAGENET_STD),
@@ -75,8 +76,12 @@ def build_dataloaders(cfg, use_heavy_augmentation: bool | None = None,
 
     class_weights = compute_class_weights(train_ds) if use_class_weights else None
 
+    # Seed the shuffle so trial-to-trial differences come from hyperparameters,
+    # not from a different data order each run.
+    generator = torch.Generator()
+    generator.manual_seed(int(getattr(cfg.training, "seed", 42)))
     train_loader = DataLoader(train_ds, batch_size=cfg.training.batch_size, shuffle=True,
-                              num_workers=cfg.training.num_workers)
+                              num_workers=cfg.training.num_workers, generator=generator)
     val_loader = DataLoader(val_ds, batch_size=cfg.training.batch_size, shuffle=False,
                             num_workers=cfg.training.num_workers)
     test_loader = DataLoader(test_ds, batch_size=cfg.training.batch_size, shuffle=False,

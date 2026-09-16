@@ -53,9 +53,14 @@ def download_and_extract(cfg, limit_per_class: int | None = None) -> int:
     from src.config import DATA_DIR
     raw_dir = DATA_DIR / "raw"
 
+    # Default the per-class cap from the config knob (dataset.images_per_class).
+    # None there means "take everything available".
+    if limit_per_class is None:
+        limit_per_class = getattr(cfg.dataset, "images_per_class", None)
+
     keep = list(cfg.dataset.class_names)
     index_map = build_class_index_map(keep)
-    logger.info("Class remap (src->new): %s", index_map)
+    logger.info("Class remap (src->new): %s | limit_per_class=%s", index_map, limit_per_class)
 
     revision = getattr(cfg.dataset, "hf_revision", None)
     filenames = cfg.dataset.hf_filename
@@ -69,10 +74,19 @@ def download_and_extract(cfg, limit_per_class: int | None = None) -> int:
         for fn in filenames
     ]
     df = pd.concat([pd.read_parquet(p) for p in parquet_paths], ignore_index=True)
+    # Shuffle once (seeded) so a per-class cap draws a representative sample
+    # across all shards, not just the first rows of shard 0.
+    seed = getattr(cfg.dataset, "random_seed", 42)
+    df = df.sample(frac=1.0, random_state=seed).reset_index(drop=True)
 
     raw_dir.mkdir(parents=True, exist_ok=True)
     for class_name in keep:
-        (raw_dir / class_name).mkdir(exist_ok=True)
+        class_dir = raw_dir / class_name
+        class_dir.mkdir(exist_ok=True)
+        # Clear stale JPEGs so shrinking/growing the cap never leaves orphans
+        # from a previous run mixed into the new sample.
+        for stale in class_dir.glob("*.jpg"):
+            stale.unlink()
 
     counters = {c: 0 for c in keep}
     skipped = 0

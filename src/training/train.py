@@ -16,8 +16,10 @@ keep working):
 
 import json
 import logging
+import random
 import time
 
+import numpy as np
 import torch
 import torch.nn as nn
 
@@ -35,7 +37,16 @@ def _resolve_flag(cfg, overrides: dict | None, name: str):
     return getattr(cfg.training, name)
 
 
-def build_optimizer_and_scheduler(model, cfg, architecture: str, overrides: dict | None = None):
+def _seed_everything(seed: int) -> None:
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(seed)
+
+
+def build_optimizer_and_scheduler(model, cfg, architecture: str, max_epochs: int,
+                                  overrides: dict | None = None):
     head_lr = _resolve_flag(cfg, overrides, "head_lr")
     backbone_lr = _resolve_flag(cfg, overrides, "backbone_lr")
     differential_lr = _resolve_flag(cfg, overrides, "differential_lr")
@@ -48,20 +59,26 @@ def build_optimizer_and_scheduler(model, cfg, architecture: str, overrides: dict
     if not cosine_schedule:
         return optimizer, None
 
+    # T_max must track the ACTUAL budget for this run (max_epochs), not the
+    # config's max_epochs. Otherwise HPO multi-fidelity trials (5-epoch budget
+    # against a 60-epoch config) never anneal their LR, so cosine_schedule
+    # was silently a no-op and the flag could not be evaluated fairly.
     warmup_epochs = cfg.training.warmup_epochs if warmup else 0
+    warmup_epochs = min(warmup_epochs, max(0, max_epochs - 1))
     if warmup_epochs > 0:
         warmup_sched = torch.optim.lr_scheduler.LinearLR(optimizer, start_factor=0.1, total_iters=warmup_epochs)
         cosine = torch.optim.lr_scheduler.CosineAnnealingLR(
-            optimizer, T_max=cfg.training.max_epochs - warmup_epochs)
+            optimizer, T_max=max(1, max_epochs - warmup_epochs))
         scheduler = torch.optim.lr_scheduler.SequentialLR(
             optimizer, schedulers=[warmup_sched, cosine], milestones=[warmup_epochs])
     else:
-        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=cfg.training.max_epochs)
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=max_epochs)
     return optimizer, scheduler
 
 
 def run_training(cfg, run_name: str, overrides: dict | None = None,
-                 max_epochs_override: int | None = None) -> dict:
+                 max_epochs_override: int | None = None,
+                 epoch_callback=None) -> dict:
     """Train one baseline run. `overrides` may contain any cfg.training key
     (head_lr, backbone_lr, weight_decay, ema_decay, label_smoothing_value,
     unfreeze_backbone, warmup, cosine_schedule, class_weighted_loss,
@@ -70,10 +87,15 @@ def run_training(cfg, run_name: str, overrides: dict | None = None,
     `max_epochs_override` is the HPO multi-fidelity budget (Hyperband
     bracket resource). When set, early-stopping patience scales down
     proportionally so low-budget trials can still stop early.
+
+    `epoch_callback(epoch, val_accuracy)` is called after each epoch's
+    validation. It may raise (e.g. optuna.TrialPruned) to abort the run —
+    this is how the HPO track gets TRUE per-epoch successive-halving pruning.
     """
     overrides = overrides or {}
     architecture = cfg.model.architecture
     max_epochs = max_epochs_override or cfg.training.max_epochs
+    _seed_everything(int(getattr(cfg.training, "seed", 42)))
 
     checkpoints_dir = cfg.output.checkpoints_dir / run_name
     metrics_dir = cfg.output.metrics_dir / run_name
@@ -100,7 +122,7 @@ def run_training(cfg, run_name: str, overrides: dict | None = None,
     label_smoothing = cfg.training.label_smoothing_value if _resolve_flag(cfg, overrides, "label_smoothing") else 0.0
     criterion = nn.CrossEntropyLoss(weight=class_weights, label_smoothing=label_smoothing)
 
-    optimizer, scheduler = build_optimizer_and_scheduler(model, cfg, architecture, overrides)
+    optimizer, scheduler = build_optimizer_and_scheduler(model, cfg, architecture, max_epochs, overrides)
     use_ema = _resolve_flag(cfg, overrides, "ema")
     ema = WeightEMA(model, _resolve_flag(cfg, overrides, "ema_decay")) if use_ema else None
 
@@ -118,7 +140,8 @@ def run_training(cfg, run_name: str, overrides: dict | None = None,
 
     for epoch in range(1, max_epochs + 1):
         train_result = train_one_epoch(model, train_loader, optimizer, criterion, device,
-                                       head_params, use_amp=cfg.training.use_amp)
+                                       head_params, use_amp=cfg.training.use_amp,
+                                       grad_clip_norm=getattr(cfg.training, "grad_clip_norm", 0.0))
         val_result = evaluate(model, val_loader, criterion, device)
 
         ema_val_acc = None
@@ -167,6 +190,12 @@ def run_training(cfg, run_name: str, overrides: dict | None = None,
                         "is_ema": best_is_ema, "overrides": overrides}, checkpoints_dir / "best_model.pth")
         else:
             epochs_without_improvement += 1
+
+        # Report this epoch's score to the HPO pruner. If it decides this
+        # trial is not promising, the callback raises and the run stops here —
+        # real successive halving, not a cosmetic single end-of-run report.
+        if epoch_callback is not None:
+            epoch_callback(epoch, candidate_acc)
 
         if epochs_without_improvement >= patience:
             logger.info("Early stopping at epoch %d.", epoch)

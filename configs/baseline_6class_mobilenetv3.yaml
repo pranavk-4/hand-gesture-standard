@@ -10,6 +10,9 @@ dataset:
   test_fraction: 0.15
   random_seed: 42
   data_version: "v1-6class"
+  # Images pulled per class from the HaGRID sample (~1730 available/class).
+  # This is the sustainability knob: bump for more signal, lower for speed.
+  images_per_class: 1000
 
 preprocessing:
   image_size: 224
@@ -33,6 +36,8 @@ training:
   label_smoothing_value: 0.1
   num_workers: 2
   use_amp: true
+  seed: 42                # reproducible init + shuffle so runs are comparable
+  grad_clip_norm: 1.0     # cap backbone grad blow-up on small data (0 = off)
   unfreeze_backbone: true
   warmup: true
   cosine_schedule: true
@@ -40,7 +45,7 @@ training:
   label_smoothing: true
   ema: true
   differential_lr: true
-  augmentation: false
+  augmentation: true      # small-data regime needs augmentation ON
 
 output:
   checkpoints_dir: "outputs/mobilenetv3_small/checkpoints"

@@ -13,7 +13,8 @@ import torch.nn.functional as F
 from src.training.metrics import gradient_norms_by_group
 
 
-def train_one_epoch(model, loader, optimizer, criterion, device, head_params, use_amp: bool) -> dict:
+def train_one_epoch(model, loader, optimizer, criterion, device, head_params, use_amp: bool,
+                    grad_clip_norm: float = 0.0) -> dict:
     model.train()
     total_loss, correct, total = 0.0, 0, 0
     grad_norm_sum = {"head": 0.0, "backbone": 0.0, "total": 0.0}
@@ -39,6 +40,11 @@ def train_one_epoch(model, loader, optimizer, criterion, device, head_params, us
             if math.isfinite(value):
                 grad_norm_sum[key] += value
                 grad_norm_count[key] += 1
+
+        # Clip AFTER unscale (grad norms above are the pre-clip diagnostic).
+        # Stops the pretrained backbone from being blown out on small data.
+        if grad_clip_norm and grad_clip_norm > 0:
+            torch.nn.utils.clip_grad_norm_(model.parameters(), grad_clip_norm)
 
         scaler.step(optimizer)
         scaler.update()
