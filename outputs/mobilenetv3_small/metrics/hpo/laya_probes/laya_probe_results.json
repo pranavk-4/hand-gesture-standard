@@ -1,0 +1,176 @@
+[
+ {
+  "id": "S1-space-smoke",
+  "kind": "space",
+  "human": "large",
+  "truth": "large won: BOHB high reached val 0.60 vs 0.55",
+  "answers": {
+   "next_space": {
+    "type": "choice",
+    "choice": "small",
+    "probabilities": {
+     "small": 0.9057,
+     "large": 0.0943
+    },
+    "confidence": 0.5493,
+    "action": {
+     "act_probability": 1.0
+    }
+   }
+  }
+ },
+ {
+  "id": "S2-space-proper",
+  "kind": "space",
+  "human": "large",
+  "truth": "small won: BOHB high reached val 0.90 vs 0.911",
+  "answers": {
+   "next_space": {
+    "type": "choice",
+    "choice": "small",
+    "probabilities": {
+     "small": 0.8911,
+     "large": 0.1089
+    },
+    "confidence": 0.5035,
+    "action": {
+     "act_probability": 1.0
+    }
+   }
+  }
+ },
+ {
+  "id": "S3-space-tiny",
+  "kind": "space",
+  "human": "neither, fix data first",
+  "truth": "neither won: real data lift beat any space change, 0.25 to 0.87 test",
+  "answers": {
+   "next_space": {
+    "type": "choice",
+    "choice": "small",
+    "probabilities": {
+     "small": 0.8082,
+     "large": 0.1918
+    },
+    "confidence": 0.2948,
+    "action": {
+     "act_probability": 1.0
+    }
+   }
+  }
+ },
+ {
+  "id": "U1-unfreeze-proper",
+  "kind": "unfreeze",
+  "human": "full",
+  "truth": "full reached test 0.868; frozen trials scored 0.2 to 0.35",
+  "answers": {
+   "schedule": {
+    "type": "choice",
+    "choice": "full",
+    "probabilities": {
+     "head_only": 0.2765,
+     "lp_ft": 0.2415,
+     "gradual": 0.2011,
+     "full": 0.2809
+    },
+    "confidence": 0.0061,
+    "action": {
+     "act_probability": 1.0
+    }
+   }
+  }
+ },
+ {
+  "id": "U2-unfreeze-tiny",
+  "kind": "unfreeze",
+  "human": "full was used, scored 0.25",
+  "truth": "unknown: staged schedules never tested on tiny data",
+  "answers": {
+   "schedule": {
+    "type": "choice",
+    "choice": "head_only",
+    "probabilities": {
+     "head_only": 0.3159,
+     "lp_ft": 0.2436,
+     "gradual": 0.1914,
+     "full": 0.2491
+    },
+    "confidence": 0.0112,
+    "action": {
+     "act_probability": 1.0
+    }
+   }
+  }
+ },
+ {
+  "id": "U3-unfreeze-frozen-evidence",
+  "kind": "unfreeze",
+  "human": "full",
+  "truth": "full: unfrozen trials all beat 0.85",
+  "answers": {
+   "schedule": {
+    "type": "choice",
+    "choice": "head_only",
+    "probabilities": {
+     "head_only": 0.3162,
+     "lp_ft": 0.2337,
+     "gradual": 0.165,
+     "full": 0.2852
+    },
+    "confidence": 0.0198,
+    "action": {
+     "act_probability": 1.0
+    }
+   }
+  }
+ },
+ {
+  "id": "T1-triage-diverged",
+  "kind": "triage",
+  "human": "stop",
+  "truth": "stopped: pruner killed it, finished 0.35",
+  "answers": {
+   "stop_now": {
+    "type": "noul",
+    "noul": 0.0001,
+    "confidence": 0.9999,
+    "action": {
+     "act_probability": 1.0
+    }
+   }
+  }
+ },
+ {
+  "id": "T2-triage-healthy",
+  "kind": "triage",
+  "human": "keep",
+  "truth": "kept: became best trial at val 0.906",
+  "answers": {
+   "stop_now": {
+    "type": "noul",
+    "noul": 0.0,
+    "confidence": 1.0,
+    "action": {
+     "act_probability": 1.0
+    }
+   }
+  }
+ },
+ {
+  "id": "T3-triage-slow-start",
+  "kind": "triage",
+  "human": "keep",
+  "truth": "kept: reached val 0.88",
+  "answers": {
+   "stop_now": {
+    "type": "noul",
+    "noul": 0.0,
+    "confidence": 1.0,
+    "action": {
+     "act_probability": 1.0
+    }
+   }
+  }
+ }
+]

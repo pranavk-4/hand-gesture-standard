@@ -22,3 +22,22 @@ trials.csv now logs test_accuracy test_loss epochs_trained budget for every tria
 Per epoch pruning is live via epoch_callback in train.py with trial.report each epoch.
 ONNX parity now passes with predicted class agreement on proper baseline.
 Each tagged HPO run writes its own subdir under metrics hpo, so runs do not overwrite.
+
+## Laya decision probes (zero-shot, local `convaiinnovations/laya`)
+
+Probe script `src/hpo/laya_probe.py` asks 9 fixed scenarios built from measured history.
+Install: `pip install laya`. Raw answers: `outputs/mobilenetv3_small/metrics/hpo/laya_probes/`.
+
+| Probe | Laya answer | Human / truth | Hit |
+|---|---|---|---|
+| S1 space after smoke pilot | small (0.91, conf 0.55) | large won (0.60 vs 0.55) | miss |
+| S2 space after proper pilot | small (0.89, conf 0.50) | small won (0.911 vs 0.90) | hit |
+| S3 space after tiny pilot | small (0.81, conf 0.29) | neither, fix data first | half |
+| U1 unfreeze proper data | full (0.28, conf 0.006) | full (test 0.868) | hit by 0.004 margin |
+| U2 unfreeze tiny data | head_only (0.32, conf 0.01) | unknown, never tested staged | open |
+| U3 unfreeze given frozen-trial evidence | head_only (0.32, conf 0.02) | full, unfrozen all beat 0.85 | miss |
+| T1 triage diverged trial | keep (noul 0.0001, conf 0.9999) | stop, pruner killed it | miss, overconfident |
+| T2 triage healthy trial | keep (noul 0.0) | keep, became best 0.906 | hit |
+| T3 triage slow starter | keep (noul 0.0) | keep, reached 0.88 | hit |
+
+Reading: choice answers collapse to one option (small, head_only) with near uniform spreads on 4-way unfreeze. Polarity check on T1 (stop framing vs keep framing) gives incoherent pair 0.0001 vs 0.307. Zero-shot Laya does not beat human ranges here. Matches the model card honest limit: base checkpoint near chance zero-shot, ships overconfident. Next step if pursued: log decisions with outcomes, refit temperature, or fine-tune on our trial histories before trusting it in the loop.
