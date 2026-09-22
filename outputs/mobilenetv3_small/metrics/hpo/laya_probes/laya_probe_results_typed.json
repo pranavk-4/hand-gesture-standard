@@ -1,0 +1,333 @@
+[
+ {
+  "id": "S1-space-smoke",
+  "kind": "space",
+  "human": "large",
+  "truth": "large won: BOHB high reached val 0.60 vs 0.55",
+  "answers": {
+   "next_space": {
+    "type": "choice",
+    "choice": "small",
+    "probabilities": {
+     "small": 0.8088,
+     "large": 0.1912
+    },
+    "confidence": 0.2961,
+    "action": {
+     "act_probability": 1.0
+    }
+   }
+  }
+ },
+ {
+  "id": "S2-space-proper",
+  "kind": "space",
+  "human": "large",
+  "truth": "small won: BOHB high reached val 0.90 vs 0.911",
+  "answers": {
+   "next_space": {
+    "type": "choice",
+    "choice": "small",
+    "probabilities": {
+     "small": 0.7766,
+     "large": 0.2234
+    },
+    "confidence": 0.2336,
+    "action": {
+     "act_probability": 1.0
+    }
+   }
+  }
+ },
+ {
+  "id": "S3-space-tiny",
+  "kind": "space",
+  "human": "neither, fix data first",
+  "truth": "neither won: real data lift beat any space change, 0.25 to 0.87 test",
+  "answers": {
+   "next_space": {
+    "type": "choice",
+    "choice": "small",
+    "probabilities": {
+     "small": 0.7766,
+     "large": 0.2234
+    },
+    "confidence": 0.2336,
+    "action": {
+     "act_probability": 1.0
+    }
+   }
+  }
+ },
+ {
+  "id": "U1-unfreeze-proper",
+  "kind": "unfreeze",
+  "human": "full",
+  "truth": "full reached test 0.868; frozen trials scored 0.2 to 0.35",
+  "answers": {
+   "schedule": {
+    "type": "choice",
+    "choice": "lp_ft",
+    "probabilities": {
+     "head_only": 0.1938,
+     "lp_ft": 0.2983,
+     "gradual": 0.2462,
+     "full": 0.2617
+    },
+    "confidence": 0.0083,
+    "action": {
+     "act_probability": 1.0
+    }
+   }
+  }
+ },
+ {
+  "id": "U2-unfreeze-tiny",
+  "kind": "unfreeze",
+  "human": "full was used, scored 0.25",
+  "truth": "unknown: staged schedules never tested on tiny data",
+  "answers": {
+   "schedule": {
+    "type": "choice",
+    "choice": "lp_ft",
+    "probabilities": {
+     "head_only": 0.214,
+     "lp_ft": 0.2943,
+     "gradual": 0.2329,
+     "full": 0.2588
+    },
+    "confidence": 0.0052,
+    "action": {
+     "act_probability": 1.0
+    }
+   }
+  }
+ },
+ {
+  "id": "U3-unfreeze-frozen-evidence",
+  "kind": "unfreeze",
+  "human": "full",
+  "truth": "full: unfrozen trials all beat 0.85",
+  "answers": {
+   "schedule": {
+    "type": "choice",
+    "choice": "lp_ft",
+    "probabilities": {
+     "head_only": 0.2324,
+     "lp_ft": 0.3187,
+     "gradual": 0.2194,
+     "full": 0.2295
+    },
+    "confidence": 0.0087,
+    "action": {
+     "act_probability": 1.0
+    }
+   }
+  }
+ },
+ {
+  "id": "T1-triage-diverged",
+  "kind": "triage",
+  "human": "stop",
+  "truth": "stopped: pruner killed it, finished 0.35",
+  "answers": {
+   "stop_now": {
+    "type": "noul",
+    "noul": 0.1208,
+    "confidence": 0.8792,
+    "action": {
+     "act_probability": 1.0
+    }
+   }
+  }
+ },
+ {
+  "id": "T2-triage-healthy",
+  "kind": "triage",
+  "human": "keep",
+  "truth": "kept: became best trial at val 0.906",
+  "answers": {
+   "stop_now": {
+    "type": "noul",
+    "noul": 0.0702,
+    "confidence": 0.9298,
+    "action": {
+     "act_probability": 1.0
+    }
+   }
+  }
+ },
+ {
+  "id": "T3-triage-slow-start",
+  "kind": "triage",
+  "human": "keep",
+  "truth": "kept: reached val 0.88",
+  "answers": {
+   "stop_now": {
+    "type": "noul",
+    "noul": 0.0492,
+    "confidence": 0.9508,
+    "action": {
+     "act_probability": 1.0
+    }
+   }
+  }
+ },
+ {
+  "id": "R1-range-proper",
+  "kind": "range",
+  "human": "zoom_in or keep",
+  "truth": "zoom_in or keep: best inside range, ceiling never binding",
+  "answers": {
+   "range_move": {
+    "type": "choice",
+    "choice": "keep",
+    "probabilities": {
+     "zoom_in": 0.343,
+     "widen_up": 0.1387,
+     "keep": 0.5183
+    },
+    "confidence": 0.1065,
+    "action": {
+     "act_probability": 1.0
+    }
+   }
+  }
+ },
+ {
+  "id": "R2-range-smoke",
+  "kind": "range",
+  "human": "zoom_in",
+  "truth": "zoom_in: winner mid range with wide spread",
+  "answers": {
+   "range_move": {
+    "type": "choice",
+    "choice": "keep",
+    "probabilities": {
+     "zoom_in": 0.3155,
+     "widen_up": 0.2098,
+     "keep": 0.4747
+    },
+    "confidence": 0.0486,
+    "action": {
+     "act_probability": 1.0
+    }
+   }
+  }
+ },
+ {
+  "id": "B1-budget",
+  "kind": "budget",
+  "human": "trials_6 pilot then more",
+  "truth": "trials_20 preferred by 10-per-param rule; trials_6 sufficed for TPE pilot",
+  "answers": {
+   "trial_budget": {
+    "type": "choice",
+    "choice": "trials_6",
+    "probabilities": {
+     "trials_6": 0.5965,
+     "trials_20": 0.4035
+    },
+    "confidence": 0.027,
+    "action": {
+     "act_probability": 1.0
+    }
+   }
+  }
+ },
+ {
+  "id": "F1-onnx-failure",
+  "kind": "failure",
+  "human": "tolerance_too_strict",
+  "truth": "tolerance_too_strict: fixed by predicted class agreement check",
+  "answers": {
+   "cause": {
+    "type": "choice",
+    "choice": "export_bug",
+    "probabilities": {
+     "needs_retrain": 0.2667,
+     "export_bug": 0.4707,
+     "tolerance_too_strict": 0.2626
+    },
+    "confidence": 0.0367,
+    "action": {
+     "act_probability": 1.0
+    }
+   }
+  }
+ },
+ {
+  "id": "F2-frozen-trial",
+  "kind": "failure",
+  "human": "frozen_backbone",
+  "truth": "frozen_backbone: zero backbone grad with full budget and sane LR",
+  "answers": {
+   "cause": {
+    "type": "choice",
+    "choice": "frozen_backbone",
+    "probabilities": {
+     "frozen_backbone": 0.3916,
+     "bad_lr": 0.383,
+     "low_budget": 0.2255
+    },
+    "confidence": 0.0255,
+    "action": {
+     "act_probability": 1.0
+    }
+   }
+  }
+ },
+ {
+  "id": "D1-data-regime",
+  "kind": "routing",
+  "human": "more_data",
+  "truth": "more_data: real data lift 0.25 to 0.87 beat any tuning",
+  "answers": {
+   "next_move": {
+    "type": "choice",
+    "choice": "more_trials",
+    "probabilities": {
+     "more_trials": 0.6643,
+     "more_data": 0.2336,
+     "bigger_model": 0.1021
+    },
+    "confidence": 0.2315,
+    "action": {
+     "act_probability": 1.0
+    }
+   }
+  }
+ },
+ {
+  "id": "T4-triage-mid-healthy",
+  "kind": "triage",
+  "human": "keep",
+  "truth": "kept: finished val 0.893",
+  "answers": {
+   "stop_now": {
+    "type": "noul",
+    "noul": 0.0453,
+    "confidence": 0.9547,
+    "action": {
+     "act_probability": 1.0
+    }
+   }
+  }
+ },
+ {
+  "id": "T5-triage-mid-weak",
+  "kind": "triage",
+  "human": "stop",
+  "truth": "stopped: frozen trial family all finished near 0.2 to 0.35",
+  "answers": {
+   "stop_now": {
+    "type": "noul",
+    "noul": 0.1185,
+    "confidence": 0.8815,
+    "action": {
+     "act_probability": 1.0
+    }
+   }
+  }
+ }
+]

@@ -41,3 +41,28 @@ Install: `pip install laya`. Raw answers: `outputs/mobilenetv3_small/metrics/hpo
 | T3 triage slow starter | keep (noul 0.0) | keep, reached 0.88 | hit |
 
 Reading: choice answers collapse to one option (small, head_only) with near uniform spreads on 4-way unfreeze. Polarity check on T1 (stop framing vs keep framing) gives incoherent pair 0.0001 vs 0.307. Zero-shot Laya does not beat human ranges here. Matches the model card honest limit: base checkpoint near chance zero-shot, ships overconfident. Next step if pursued: log decisions with outcomes, refit temperature, or fine-tune on our trial histories before trusting it in the loop.
+
+## Laya audit v2 (17 probes x base vs typed-decisions checkpoints)
+
+Extended battery adds range zoom, trial budget, failure cause, data regime routing, mid-training triage. Raw answers: `outputs/mobilenetv3_small/metrics/hpo/laya_probes/laya_probe_results_{base,typed}.json`. Score counts U2 as open (staged schedules never tested on tiny data).
+
+| Probe | Base | Typed | Truth |
+|---|---|---|---|
+| S1 space smoke | small miss | small miss | large won |
+| S2 space proper | small hit | small hit | small won |
+| S3 space tiny | small half | small half | fix data, not space |
+| U1 unfreeze proper | full hit by 0.004 | lp_ft miss | full |
+| U3 unfreeze evidence | head_only miss | lp_ft miss | full |
+| R1 range proper | keep hit | keep hit | zoom or keep |
+| R2 range smoke | keep half | keep half | zoom_in |
+| B1 budget 12-param | trials_6 half | trials_6 half | 20 preferred, 6 sufficed |
+| F1 onnx failure | export_bug miss | export_bug miss | tolerance_too_strict |
+| F2 frozen trial | bad_lr miss | frozen_backbone hit by 0.009 | frozen_backbone |
+| D1 data regime | more_trials miss | more_trials miss | more_data |
+| T1 triage diverged | keep miss, conf 0.9999 | keep miss, noul 0.12 | stop |
+| T2/T3/T4 triage keep | keep hit x3 | keep hit x3 | keep |
+| T5 triage weak | keep miss, conf 0.9999 | keep miss, noul 0.12 | stop |
+
+Totals: base 6 hits 3 halves 7 misses. Typed 6 hits 3 halves 7 misses. Same score, different failure shape: typed confidences run lower on wrong answers (0.88 max vs 0.9999), its unfreeze misses land on lp_ft which is the literature safe default, and it uniquely hits F2. Typed gives byte-identical answers on S2 vs S3, so it is less sensitive to state nuance than base.
+
+Where the decision model fits today: keep-confirming second opinion on healthy trials only, plus free logging of every call for future calibration. Stop decisions stay with the Hyperband pruner. Both checkpoints fail data regime routing, failure cause except F2-typed, and any stop call. Fine-tuning needs 100+ logged decisions first; the probe harness accumulates them at zero GPU training cost.
