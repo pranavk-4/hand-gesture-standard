@@ -74,9 +74,24 @@ Totals v2 (17 probes): base 6 hits 3 halves 7 misses. Typed 6 hits 3 halves 7 mi
 
 Totals v3: base 6 hits 3 halves 8 misses, typed 7 hits 3 halves 7 misses (U2, UR2 open). Typed leads by one on the resnet probe. Both answer full on mobilevit with no data behind it.
 
-## Cross-arch check (resnet18, proper data, low space, 6 trials)
+## Laya audit v4 (v2 battery: atomic, explicit options, evidence-first states)
 
-Resnet18 baseline: val 0.928 test 0.920, 53 epochs early stop, ONNX parity passes.
+Same 12 probes on both checkpoints. Raw: `laya_probes/laya_probe_v2_results_{base,typed}.json`.
+
+| Probe | Base v2 | Typed v2 | Truth |
+|---|---|---|---|
+| R1b explicit range options | zoom_0005_0008 hit | zoom_0005_0008 hit | zoom_0005_0008 |
+| R2b explicit range options | keep_full miss | keep_full miss | zoom_0001_0003 |
+| G-aug/cw/ls/diff keep flag | drop x4, all miss | drop x4, all miss | keep all four |
+| G-ema-value | ema_false hit | ema_false hit | ema_false |
+| G-unfreeze-value | unfreeze_true hit | unfreeze_true hit | unfreeze_true |
+| U3b atomic yes/no pair | yes 0.79, no 0.28 hit+hit | yes 0.60, no 0.41 hit+hit | yes then no |
+| D1b atomic pair | no hit, no miss | no hit, no miss | no then yes |
+| T1b/T5b positive framing | no 0.49, no 0.31 hit+hit | no 0.26, no 0.22 hit+hit | no then no |
+
+Totals v2: both checkpoints 6 hits 1 half 5 misses. Fixes that worked: explicit candidate options fixed R1, atomic decomposition fixed U3 triage and stop-side triage, concrete value-vs-value fixed ema and unfreeze. Fixes that failed: abstract keep-or-drop flag questions get a systematic no on both checkpoints, smoke zoom still keeps, data upside still denied. Rule drawn: never ask abstract keep or drop, always ask value vs value with the evidence inside the criteria.
+
+## Cross-arch check (resnet18, proper data, low space, 6 trials)
 hyperband_low: best val 0.936 test 0.916, 4 complete 2 pruned.
 bohb_low: best val 0.959 test 0.940, 3 complete 3 pruned, winner head_lr 0.000262 backbone_lr 0.000660.
 Pattern holds across architectures: BOHB beats Hyperband beats-or-ties baseline on val, pruning works, resnet winners use 10x smaller head_lr than mobilenet winners. Artifacts: `outputs/resnet18/metrics/hpo/{hyperband_low,bohb_low}/`.

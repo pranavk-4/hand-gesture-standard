@@ -1,0 +1,229 @@
+[
+ {
+  "id": "R1b-range-options",
+  "kind": "range",
+  "human": "zoom_0005_0008",
+  "truth": "zoom_0005_0008: winners cluster inside, ceiling never binding",
+  "answers": {
+   "range_move": {
+    "type": "choice",
+    "choice": "zoom_0005_0008",
+    "probabilities": {
+     "zoom_0005_0008": 0.4271,
+     "widen_above_001": 0.2282,
+     "keep_full": 0.3448
+    },
+    "confidence": 0.0282,
+    "action": {
+     "act_probability": 1.0
+    }
+   }
+  }
+ },
+ {
+  "id": "R2b-range-options",
+  "kind": "range",
+  "human": "zoom_0001_0003",
+  "truth": "zoom_0001_0003: tight zoom around a mid-range winner",
+  "answers": {
+   "range_move": {
+    "type": "choice",
+    "choice": "keep_full",
+    "probabilities": {
+     "zoom_0001_0003": 0.3254,
+     "zoom_0005_0005": 0.2922,
+     "keep_full": 0.3824
+    },
+    "confidence": 0.0056,
+    "action": {
+     "act_probability": 1.0
+    }
+   }
+  }
+ },
+ {
+  "id": "G-aug-flag",
+  "kind": "flag",
+  "human": "yes keep",
+  "truth": "yes: one anecdote cannot retire a flag the baseline depends on",
+  "answers": {
+   "keep_flag": {
+    "type": "noul",
+    "noul": 0.3334,
+    "confidence": 0.6666,
+    "action": {
+     "act_probability": 1.0
+    }
+   }
+  }
+ },
+ {
+  "id": "G-cw-flag",
+  "kind": "flag",
+  "human": "yes keep",
+  "truth": "yes: uniformly true among winners, keep tunable not fixed",
+  "answers": {
+   "keep_flag": {
+    "type": "noul",
+    "noul": 0.1294,
+    "confidence": 0.8706,
+    "action": {
+     "act_probability": 1.0
+    }
+   }
+  }
+ },
+ {
+  "id": "G-ls-flag",
+  "kind": "flag",
+  "human": "yes keep",
+  "truth": "yes: uniformly true among winners, keep tunable not fixed",
+  "answers": {
+   "keep_flag": {
+    "type": "noul",
+    "noul": 0.146,
+    "confidence": 0.854,
+    "action": {
+     "act_probability": 1.0
+    }
+   }
+  }
+ },
+ {
+  "id": "G-ema-value",
+  "kind": "flag",
+  "human": "ema_false",
+  "truth": "ema_false: two independent wins beat one baseline anecdote",
+  "answers": {
+   "ema_next": {
+    "type": "choice",
+    "choice": "ema_false",
+    "probabilities": {
+     "ema_false": 0.7952,
+     "ema_true": 0.1277,
+     "keep_tunable": 0.077
+    },
+    "confidence": 0.4152,
+    "action": {
+     "act_probability": 1.0
+    }
+   }
+  }
+ },
+ {
+  "id": "G-diff-flag",
+  "kind": "flag",
+  "human": "yes keep",
+  "truth": "yes: split evidence means the flag earns its keep",
+  "answers": {
+   "keep_flag": {
+    "type": "noul",
+    "noul": 0.1725,
+    "confidence": 0.8275,
+    "action": {
+     "act_probability": 1.0
+    }
+   }
+  }
+ },
+ {
+  "id": "G-unfreeze-value",
+  "kind": "flag",
+  "human": "unfreeze_true",
+  "truth": "unfreeze_true: evidence is unanimous across every trial",
+  "answers": {
+   "unfreeze_next": {
+    "type": "choice",
+    "choice": "unfreeze_true",
+    "probabilities": {
+     "unfreeze_true": 0.621,
+     "unfreeze_false": 0.379
+    },
+    "confidence": 0.0427,
+    "action": {
+     "act_probability": 1.0
+    }
+   }
+  }
+ },
+ {
+  "id": "U3b-atomic",
+  "kind": "unfreeze",
+  "human": "yes then no",
+  "truth": "yes then no: matches every measured trial",
+  "answers": {
+   "full_beats_085": {
+    "type": "noul",
+    "noul": 0.6024,
+    "confidence": 0.6024,
+    "action": {
+     "act_probability": 1.0
+    }
+   },
+   "head_beats_05": {
+    "type": "noul",
+    "noul": 0.4106,
+    "confidence": 0.5894,
+    "action": {
+     "act_probability": 1.0
+    }
+   }
+  }
+ },
+ {
+  "id": "D1b-atomic",
+  "kind": "routing",
+  "human": "no then yes",
+  "truth": "no then yes: plateau held across 9 trials, real data later hit 0.87",
+  "answers": {
+   "trials_beat_03": {
+    "type": "noul",
+    "noul": 0.2199,
+    "confidence": 0.7801,
+    "action": {
+     "act_probability": 1.0
+    }
+   },
+   "data_beat_05": {
+    "type": "noul",
+    "noul": 0.1549,
+    "confidence": 0.8451,
+    "action": {
+     "act_probability": 1.0
+    }
+   }
+  }
+ },
+ {
+  "id": "T1b-positive",
+  "kind": "triage",
+  "human": "no",
+  "truth": "no: finished 0.35, pruner killed it",
+  "answers": {
+   "finishes_05": {
+    "type": "noul",
+    "noul": 0.2574,
+    "confidence": 0.7426,
+    "action": {
+     "act_probability": 1.0
+    }
+   }
+  }
+ },
+ {
+  "id": "T5b-positive",
+  "kind": "triage",
+  "human": "no",
+  "truth": "no: frozen family all finished near 0.2 to 0.35",
+  "answers": {
+   "finishes_05": {
+    "type": "noul",
+    "noul": 0.2187,
+    "confidence": 0.7813,
+    "action": {
+     "act_probability": 1.0
+    }
+   }
+  }
+ }
+]

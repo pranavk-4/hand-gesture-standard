@@ -409,17 +409,248 @@ SCENARIOS = [
 ]
 
 
+SCENARIOS_V2 = [
+    {
+        "id": "R1b-range-options",
+        "kind": "range",
+        "state": (
+            "Pilot HPO done on 4200 images. Six winners lie between head_lr "
+            "0.005 and 0.008. No trial reached the 0.01 ceiling. "
+            "Pick one of the three candidate ranges below."
+        ),
+        "questions": {
+            "range_move": {
+                "type": "choice",
+                "instructions": "Which head_lr range goes into the next round?",
+                "criteria": {
+                    "zoom_0005_0008": "narrow to 0.005 to 0.008 where all winners sit",
+                    "widen_above_001": "extend the top above 0.01",
+                    "keep_full": "leave 0.0001 to 0.01 unchanged",
+                },
+            }
+        },
+        "human": "zoom_0005_0008",
+        "truth": "zoom_0005_0008: winners cluster inside, ceiling never binding",
+    },
+    {
+        "id": "R2b-range-options",
+        "kind": "range",
+        "state": (
+            "Pilot HPO done on 1200 images. Winner head_lr 0.0017. "
+            "Results spread wide across the full range. "
+            "Pick one of the three candidate ranges below."
+        ),
+        "questions": {
+            "range_move": {
+                "type": "choice",
+                "instructions": "Which head_lr range goes into the next round?",
+                "criteria": {
+                    "zoom_0001_0003": "narrow to 0.001 to 0.003 around the winner",
+                    "zoom_0005_0005": "narrow to 0.0005 to 0.005, wider safety margin",
+                    "keep_full": "leave 0.0001 to 0.01 unchanged",
+                },
+            }
+        },
+        "human": "zoom_0001_0003",
+        "truth": "zoom_0001_0003: tight zoom around a mid-range winner",
+    },
+    {
+        "id": "G-aug-flag",
+        "kind": "flag",
+        "state": (
+            "Baseline with augmentation true reached test 0.868 over 60 epochs. "
+            "One single HPO trial with augmentation false reached test 0.889. "
+            "One trial is anecdote, sixty epochs is evidence."
+        ),
+        "questions": {
+            "keep_flag": {
+                "type": "noul",
+                "instructions": "Should augmentation stay a tunable flag in the next space?",
+            }
+        },
+        "human": "yes keep",
+        "truth": "yes: one anecdote cannot retire a flag the baseline depends on",
+    },
+    {
+        "id": "G-cw-flag",
+        "kind": "flag",
+        "state": (
+            "class_weighted_loss true in the 0.868 baseline and in both mobilenet "
+            "HPO winners at test 0.899 and 0.889. Never observed false winning."
+        ),
+        "questions": {
+            "keep_flag": {
+                "type": "noul",
+                "instructions": "Should class_weighted_loss stay a tunable flag in the next space?",
+            }
+        },
+        "human": "yes keep",
+        "truth": "yes: uniformly true among winners, keep tunable not fixed",
+    },
+    {
+        "id": "G-ls-flag",
+        "kind": "flag",
+        "state": (
+            "label_smoothing true in both mobilenet HPO winners at test 0.899 "
+            "and 0.889. Never observed false winning."
+        ),
+        "questions": {
+            "keep_flag": {
+                "type": "noul",
+                "instructions": "Should label_smoothing stay a tunable flag in the next space?",
+            }
+        },
+        "human": "yes keep",
+        "truth": "yes: uniformly true among winners, keep tunable not fixed",
+    },
+    {
+        "id": "G-ema-value",
+        "kind": "flag",
+        "state": (
+            "ema false in both 12-param winners at test 0.899 and 0.889. "
+            "Baseline with ema true reached test 0.868. Two independent wins with false."
+        ),
+        "questions": {
+            "ema_next": {
+                "type": "choice",
+                "instructions": "Which ema setting goes into the next round?",
+                "criteria": {
+                    "ema_false": "fix ema false, winners agree twice",
+                    "ema_true": "fix ema true, baseline used it",
+                    "keep_tunable": "keep ema as a tunable flag",
+                },
+            }
+        },
+        "human": "ema_false",
+        "truth": "ema_false: two independent wins beat one baseline anecdote",
+    },
+    {
+        "id": "G-diff-flag",
+        "kind": "flag",
+        "state": (
+            "differential_lr true in one HPO winner, false in the other. "
+            "Baseline true reached 0.868. Evidence is exactly split."
+        ),
+        "questions": {
+            "keep_flag": {
+                "type": "noul",
+                "instructions": "Should differential_lr stay a tunable flag in the next space?",
+            }
+        },
+        "human": "yes keep",
+        "truth": "yes: split evidence means the flag earns its keep",
+    },
+    {
+        "id": "G-unfreeze-value",
+        "kind": "flag",
+        "state": (
+            "Every trial with frozen backbone scored val 0.2 to 0.35. "
+            "Every trial with unfrozen backbone scored above 0.85. "
+            "Backbone gradient reads exactly 0 when frozen."
+        ),
+        "questions": {
+            "unfreeze_next": {
+                "type": "choice",
+                "instructions": "Which unfreeze setting goes into the next round?",
+                "criteria": {
+                    "unfreeze_true": "unfreeze the backbone, all such trials beat 0.85",
+                    "unfreeze_false": "freeze the backbone, all such trials stall near 0.3",
+                },
+            }
+        },
+        "human": "unfreeze_true",
+        "truth": "unfreeze_true: evidence is unanimous across every trial",
+    },
+    {
+        "id": "U3b-atomic",
+        "kind": "unfreeze",
+        "state": (
+            "Every trial with frozen backbone scored val 0.2 to 0.35. "
+            "Every trial with unfrozen backbone scored above 0.85. "
+            "Answer each question on its own."
+        ),
+        "questions": {
+            "full_beats_085": {
+                "type": "noul",
+                "instructions": "Would full fine-tuning beat val 0.85 on this data?",
+            },
+            "head_beats_05": {
+                "type": "noul",
+                "instructions": "Would head-only training beat val 0.5 on this data?",
+            },
+        },
+        "human": "yes then no",
+        "truth": "yes then no: matches every measured trial",
+    },
+    {
+        "id": "D1b-atomic",
+        "kind": "routing",
+        "state": (
+            "120 tiny images, random init, 9 HPO trials. Best val 0.25 against "
+            "chance 0.167. All learning rates score the same. Answer each on its own."
+        ),
+        "questions": {
+            "trials_beat_03": {
+                "type": "noul",
+                "instructions": "Would more trials on this data beat val 0.3?",
+            },
+            "data_beat_05": {
+                "type": "noul",
+                "instructions": "Would real data beat val 0.5?",
+            },
+        },
+        "human": "no then yes",
+        "truth": "no then yes: plateau held across 9 trials, real data later hit 0.87",
+    },
+    {
+        "id": "T1b-positive",
+        "kind": "triage",
+        "state": (
+            "Trial val accuracy by epoch: 0.19, 0.20, 0.23, 0.24, 0.27. "
+            "Backbone frozen, gradient norm 0. Leader above 0.70. Budget 30 epochs."
+        ),
+        "questions": {
+            "finishes_05": {
+                "type": "noul",
+                "instructions": "Will this trial finish above val 0.5?",
+            }
+        },
+        "human": "no",
+        "truth": "no: finished 0.35, pruner killed it",
+    },
+    {
+        "id": "T5b-positive",
+        "kind": "triage",
+        "state": (
+            "Trial val accuracy at epoch 5 is 0.42 while the leader is above 0.75. "
+            "Backbone gradient norm is 0. Budget is 30 epochs."
+        ),
+        "questions": {
+            "finishes_05": {
+                "type": "noul",
+                "instructions": "Will this trial finish above val 0.5?",
+            }
+        },
+        "human": "no",
+        "truth": "no: frozen family all finished near 0.2 to 0.35",
+    },
+]
+
+
 def main() -> None:
     import laya
 
     ap = argparse.ArgumentParser()
     ap.add_argument("--checkpoint", choices=["base", "typed"], default="base")
+    ap.add_argument("--battery", choices=["v1", "v2"], default="v1")
     args = ap.parse_args()
     spec = CHECKPOINTS[args.checkpoint]
     agent = laya.load(spec["model_id"], **{k: v for k, v in spec.items() if k != "model_id"})
-    out_name = f"laya_probe_results_{args.checkpoint}.json"
+    scenarios = SCENARIOS if args.battery == "v1" else SCENARIOS_V2
+    scenarios = SCENARIOS if args.battery == "v1" else SCENARIOS_V2
+    out_name = f"laya_probe_{args.battery}_results_{args.checkpoint}.json"
     results = []
-    for sc in SCENARIOS:
+    for sc in scenarios:
         out = agent.predict(sc["state"], sc["questions"])
         row = {"id": sc["id"], "kind": sc["kind"], "human": sc["human"],
                "truth": sc["truth"], "answers": out["answers"]}
