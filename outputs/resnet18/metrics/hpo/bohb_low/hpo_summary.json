@@ -1,0 +1,18 @@
+{
+  "tag": "bohb_low",
+  "n_trials": 6,
+  "n_complete": 3,
+  "n_pruned": 3,
+  "best_value": 0.9588888888888889,
+  "best_params": {
+    "head_lr": 0.00026153867358656154,
+    "backbone_lr": 0.0006602694206513639,
+    "weight_decay": 0.0003435257506073091,
+    "ema_decay": 0.8886417060944642
+  },
+  "sampler": "tpe",
+  "space": "search_space",
+  "min_resource_epochs": 5,
+  "max_resource_epochs": 30,
+  "wall_clock_seconds": 3350.2005994319916
+}

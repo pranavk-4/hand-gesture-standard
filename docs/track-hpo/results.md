@@ -63,6 +63,22 @@ Extended battery adds range zoom, trial budget, failure cause, data regime routi
 | T2/T3/T4 triage keep | keep hit x3 | keep hit x3 | keep |
 | T5 triage weak | keep miss, conf 0.9999 | keep miss, noul 0.12 | stop |
 
-Totals: base 6 hits 3 halves 7 misses. Typed 6 hits 3 halves 7 misses. Same score, different failure shape: typed confidences run lower on wrong answers (0.88 max vs 0.9999), its unfreeze misses land on lp_ft which is the literature safe default, and it uniquely hits F2. Typed gives byte-identical answers on S2 vs S3, so it is less sensitive to state nuance than base.
+Totals v2 (17 probes): base 6 hits 3 halves 7 misses. Typed 6 hits 3 halves 7 misses. Same score, different failure shape: typed confidences run lower on wrong answers (0.88 max vs 0.9999), its unfreeze misses land on lp_ft which is the literature safe default, and it uniquely hits F2. Typed gives byte-identical answers on S2 vs S3, so it is less sensitive to state nuance than base.
+
+## Laya audit v3 (added UR1 resnet, UR2 mobilevit, 19 probes)
+
+| Probe | Base | Typed | Truth |
+|---|---|---|---|
+| UR1 unfreeze resnet18 11M | head_only miss | full hit by 0.012 | full, baseline 0.92 |
+| UR2 unfreeze mobilevit, zero runs | full, conf 0.27 | full, conf 0.09 | unknown |
+
+Totals v3: base 6 hits 3 halves 8 misses, typed 7 hits 3 halves 7 misses (U2, UR2 open). Typed leads by one on the resnet probe. Both answer full on mobilevit with no data behind it.
+
+## Cross-arch check (resnet18, proper data, low space, 6 trials)
+
+Resnet18 baseline: val 0.928 test 0.920, 53 epochs early stop, ONNX parity passes.
+hyperband_low: best val 0.936 test 0.916, 4 complete 2 pruned.
+bohb_low: best val 0.959 test 0.940, 3 complete 3 pruned, winner head_lr 0.000262 backbone_lr 0.000660.
+Pattern holds across architectures: BOHB beats Hyperband beats-or-ties baseline on val, pruning works, resnet winners use 10x smaller head_lr than mobilenet winners. Artifacts: `outputs/resnet18/metrics/hpo/{hyperband_low,bohb_low}/`.
 
 Where the decision model fits today: keep-confirming second opinion on healthy trials only, plus free logging of every call for future calibration. Stop decisions stay with the Hyperband pruner. Both checkpoints fail data regime routing, failure cause except F2-typed, and any stop call. Fine-tuning needs 100+ logged decisions first; the probe harness accumulates them at zero GPU training cost.

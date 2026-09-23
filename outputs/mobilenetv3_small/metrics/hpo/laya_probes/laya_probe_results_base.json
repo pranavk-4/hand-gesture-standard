@@ -329,5 +329,49 @@
     }
    }
   }
+ },
+ {
+  "id": "UR1-unfreeze-resnet",
+  "kind": "unfreeze",
+  "human": "full",
+  "truth": "full: unfrozen baseline 0.92, mobilenet pattern transfers",
+  "answers": {
+   "schedule": {
+    "type": "choice",
+    "choice": "head_only",
+    "probabilities": {
+     "head_only": 0.334,
+     "lp_ft": 0.2009,
+     "gradual": 0.1695,
+     "full": 0.2956
+    },
+    "confidence": 0.0263,
+    "action": {
+     "act_probability": 1.0
+    }
+   }
+  }
+ },
+ {
+  "id": "UR2-unfreeze-mobilevit",
+  "kind": "unfreeze",
+  "human": "lp_ft or gradual per textbooks",
+  "truth": "unknown: zero mobilevit runs exist",
+  "answers": {
+   "schedule": {
+    "type": "choice",
+    "choice": "full",
+    "probabilities": {
+     "head_only": 0.1106,
+     "lp_ft": 0.1378,
+     "gradual": 0.0948,
+     "full": 0.6567
+    },
+    "confidence": 0.2669,
+    "action": {
+     "act_probability": 1.0
+    }
+   }
+  }
  }
 ]

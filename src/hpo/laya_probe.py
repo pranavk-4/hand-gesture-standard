@@ -358,6 +358,54 @@ SCENARIOS = [
         "human": "stop",
         "truth": "stopped: frozen trial family all finished near 0.2 to 0.35",
     },
+    {
+        "id": "UR1-unfreeze-resnet",
+        "kind": "unfreeze",
+        "state": (
+            "Image classification, 4200 training images, 6 hand gesture classes, "
+            "resnet18 with 11M params pretrained on ImageNet. "
+            "Medium domain gap: natural images to hands. Larger model than mobilenet, same sufficient data. "
+            "Unfrozen baseline reached val 0.928 test 0.92. Sister mobilenet runs show frozen trials stall at 0.2 to 0.35."
+        ),
+        "questions": {
+            "schedule": {
+                "type": "choice",
+                "instructions": "Which backbone unfreeze schedule should training use?",
+                "criteria": {
+                    "head_only": "freeze backbone, train classifier head only",
+                    "lp_ft": "train head first, then unfreeze all layers with low LR",
+                    "gradual": "unfreeze one block group at a time from head to stem",
+                    "full": "fine-tune all layers from the start with differential LRs",
+                },
+            }
+        },
+        "human": "full",
+        "truth": "full: unfrozen baseline 0.92, mobilenet pattern transfers",
+    },
+    {
+        "id": "UR2-unfreeze-mobilevit",
+        "kind": "unfreeze",
+        "state": (
+            "Image classification, 4200 training images, 6 hand gesture classes, "
+            "mobilevit_xxs hybrid vision transformer pretrained on ImageNet. "
+            "No runs exist yet for this architecture. Transformers are data hungry "
+            "and sensitive to full fine-tuning on small data."
+        ),
+        "questions": {
+            "schedule": {
+                "type": "choice",
+                "instructions": "Which backbone unfreeze schedule should training use?",
+                "criteria": {
+                    "head_only": "freeze backbone, train classifier head only",
+                    "lp_ft": "train head first, then unfreeze all layers with low LR",
+                    "gradual": "unfreeze one block group at a time from head to stem",
+                    "full": "fine-tune all layers from the start with differential LRs",
+                },
+            }
+        },
+        "human": "lp_ft or gradual per textbooks",
+        "truth": "unknown: zero mobilevit runs exist",
+    },
 ]
 
 
