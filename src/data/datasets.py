@@ -55,7 +55,8 @@ def compute_class_weights(train_ds) -> torch.Tensor:
 
 
 def build_dataloaders(cfg, use_heavy_augmentation: bool | None = None,
-                      use_class_weights: bool | None = None):
+                      use_class_weights: bool | None = None,
+                      batch_size: int | None = None):
     from src.config import DATA_DIR
     if use_heavy_augmentation is None:
         use_heavy_augmentation = bool(cfg.training.augmentation)
@@ -80,10 +81,11 @@ def build_dataloaders(cfg, use_heavy_augmentation: bool | None = None,
     # not from a different data order each run.
     generator = torch.Generator()
     generator.manual_seed(int(getattr(cfg.training, "seed", 42)))
-    train_loader = DataLoader(train_ds, batch_size=cfg.training.batch_size, shuffle=True,
+    batch_size = batch_size or cfg.training.batch_size
+    train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True,
                               num_workers=cfg.training.num_workers, generator=generator)
-    val_loader = DataLoader(val_ds, batch_size=cfg.training.batch_size, shuffle=False,
+    val_loader = DataLoader(val_ds, batch_size=batch_size, shuffle=False,
                             num_workers=cfg.training.num_workers)
-    test_loader = DataLoader(test_ds, batch_size=cfg.training.batch_size, shuffle=False,
+    test_loader = DataLoader(test_ds, batch_size=batch_size, shuffle=False,
                              num_workers=cfg.training.num_workers)
     return train_loader, val_loader, test_loader, class_weights

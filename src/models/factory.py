@@ -46,14 +46,25 @@ def head_module(model: nn.Module, architecture: str) -> nn.Module:
     raise ValueError(f"No head mapping for {architecture!r}")
 
 
-def apply_unfreeze(model: nn.Module, architecture: str, unfreeze_backbone: bool) -> None:
+def apply_unfreeze(model: nn.Module, architecture: str, unfreeze_backbone: bool | int) -> None:
+    """unfreeze_backbone True unfreezes every group, False head only.
+    An int unfreeze_depth unfreezes that many trailing groups plus the head:
+    0 is head only, N >= group count is everything. Lets HPO discover depth
+    per model instead of guessing a boolean.
+    """
     for param in model.parameters():
         param.requires_grad = False
 
-    if unfreeze_backbone:
-        for group in _group_containers(model, architecture):
-            for param in group.parameters():
-                param.requires_grad = True
+    groups = _group_containers(model, architecture)
+    if unfreeze_backbone is True:
+        depth = len(groups)
+    elif unfreeze_backbone is False:
+        depth = 0
+    else:
+        depth = max(0, min(int(unfreeze_backbone), len(groups)))
+    for group in groups[len(groups) - depth:]:
+        for param in group.parameters():
+            param.requires_grad = True
 
     for param in head_module(model, architecture).parameters():
         param.requires_grad = True

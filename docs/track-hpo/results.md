@@ -22,6 +22,7 @@ trials.csv now logs test_accuracy test_loss epochs_trained budget for every tria
 Per epoch pruning is live via epoch_callback in train.py with trial.report each epoch.
 ONNX parity now passes with predicted class agreement on proper baseline.
 Each tagged HPO run writes its own subdir under metrics hpo, so runs do not overwrite.
+Shared-code change pending review: batch_size, grad_clip_norm, label_smoothing_value, warmup_epochs, unfreeze_depth now honor overrides; apply_unfreeze accepts depth int. Verified depth params 6150/62598/932694 and 1-epoch knob run. Policy bank src/hpo/laya_policy.py exposes every HPO decision as logged atomic Laya questions.
 
 ## Laya decision probes (zero-shot, local `convaiinnovations/laya`)
 

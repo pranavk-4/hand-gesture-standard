@@ -63,7 +63,7 @@ def build_optimizer_and_scheduler(model, cfg, architecture: str, max_epochs: int
     # config's max_epochs. Otherwise HPO multi-fidelity trials (5-epoch budget
     # against a 60-epoch config) never anneal their LR, so cosine_schedule
     # was silently a no-op and the flag could not be evaluated fairly.
-    warmup_epochs = cfg.training.warmup_epochs if warmup else 0
+    warmup_epochs = _resolve_flag(cfg, overrides, "warmup_epochs") if warmup else 0
     warmup_epochs = min(warmup_epochs, max(0, max_epochs - 1))
     if warmup_epochs > 0:
         warmup_sched = torch.optim.lr_scheduler.LinearLR(optimizer, start_factor=0.1, total_iters=warmup_epochs)
@@ -81,7 +81,8 @@ def run_training(cfg, run_name: str, overrides: dict | None = None,
                  epoch_callback=None) -> dict:
     """Train one baseline run. `overrides` may contain any cfg.training key
     (head_lr, backbone_lr, weight_decay, ema_decay, label_smoothing_value,
-    unfreeze_backbone, warmup, cosine_schedule, class_weighted_loss,
+    warmup_epochs, grad_clip_norm, batch_size, unfreeze_backbone,
+    unfreeze_depth, warmup, cosine_schedule, class_weighted_loss,
     label_smoothing, ema, differential_lr, augmentation).
 
     `max_epochs_override` is the HPO multi-fidelity budget (Hyperband
@@ -110,16 +111,20 @@ def run_training(cfg, run_name: str, overrides: dict | None = None,
         cfg,
         use_heavy_augmentation=_resolve_flag(cfg, overrides, "augmentation"),
         use_class_weights=_resolve_flag(cfg, overrides, "class_weighted_loss"),
+        batch_size=_resolve_flag(cfg, overrides, "batch_size"),
     )
 
     model = build_model(architecture, num_classes=len(cfg.dataset.class_names),
                         pretrained=cfg.model.pretrained)
-    apply_unfreeze(model, architecture, _resolve_flag(cfg, overrides, "unfreeze_backbone"))
+    depth = overrides.get("unfreeze_depth", None) if overrides else None
+    if depth is None:
+        depth = _resolve_flag(cfg, overrides, "unfreeze_backbone")
+    apply_unfreeze(model, architecture, depth)
     model = model.to(device)
 
     if class_weights is not None:
         class_weights = class_weights.to(device)
-    label_smoothing = cfg.training.label_smoothing_value if _resolve_flag(cfg, overrides, "label_smoothing") else 0.0
+    label_smoothing = _resolve_flag(cfg, overrides, "label_smoothing_value") if _resolve_flag(cfg, overrides, "label_smoothing") else 0.0
     criterion = nn.CrossEntropyLoss(weight=class_weights, label_smoothing=label_smoothing)
 
     optimizer, scheduler = build_optimizer_and_scheduler(model, cfg, architecture, max_epochs, overrides)
@@ -140,8 +145,8 @@ def run_training(cfg, run_name: str, overrides: dict | None = None,
 
     for epoch in range(1, max_epochs + 1):
         train_result = train_one_epoch(model, train_loader, optimizer, criterion, device,
-                                       head_params, use_amp=cfg.training.use_amp,
-                                       grad_clip_norm=getattr(cfg.training, "grad_clip_norm", 0.0))
+                                        head_params, use_amp=cfg.training.use_amp,
+                                        grad_clip_norm=_resolve_flag(cfg, overrides, "grad_clip_norm"))
         val_result = evaluate(model, val_loader, criterion, device)
 
         ema_val_acc = None
