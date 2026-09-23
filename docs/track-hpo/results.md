@@ -1,5 +1,24 @@
 # Track 1 — results
 
+## Statistical caveats (read before quoting any number below)
+
+Independent audit, verified against installed optuna 4.9.0 and rerun files:
+- TPE never switched on. TPESampler defaults to n_startup_trials 10 with no
+  seed, and every study here ran 9 trials or fewer. All of them sampled
+  randomly. Every run labeled BOHB below was random search, so no
+  BOHB-beats-Hyperband claim on this page is supported.
+- One unseeded study per setting, never repeated. Nothing here separates
+  sampler skill from luck.
+- Noise floor is about 0.01 SE on 900 val images at 0.9 accuracy (0.02 at
+  95 pct). Gaps near 0.01 are indistinguishable. The 0.023 resnet gap is
+  suggestive only, single run, no seed.
+- The human 4-param control had hindsight: it was built after watching
+  frozen-backbone trials fail on this same data. Laya selections were cold.
+- Wasted dimensions: ema_decay is sampled with EMA off, backbone_lr without
+  differential LR. Conditional spaces still missing.
+- What holds up: pipeline and per-epoch pruning end to end, frozen backbones
+  reliably fail on this data, resnet18 beats mobilenetv3 here.
+
 ## Best config vs baseline
 Proper data 4200 train 900 val 900 test letterbox pretrained baseline 60 epochs: val 0.9022 test 0.8678.
 Best is BOHB low 4-param 6 trials tag bohb_low trial 004: val 0.9111 test 0.8989.
