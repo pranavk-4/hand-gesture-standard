@@ -1,0 +1,10 @@
+overrides:
+  backbone_lr: 0.0001141497108859432
+  batch_size: 16
+  ema_decay: 0.8946450375352355
+  grad_clip_norm: 2.0
+  head_lr: 0.0002018827443928985
+  label_smoothing_value: 0.05
+  unfreeze_depth: 4
+  warmup_epochs: 3
+  weight_decay: 0.00032343041046635767

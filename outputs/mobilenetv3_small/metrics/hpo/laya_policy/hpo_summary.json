@@ -1,0 +1,23 @@
+{
+  "tag": "laya_policy",
+  "n_trials": 6,
+  "n_complete": 3,
+  "n_pruned": 3,
+  "best_value": 0.8777777777777778,
+  "best_params": {
+    "backbone_lr": 0.0001141497108859432,
+    "batch_size": 16,
+    "ema_decay": 0.8946450375352355,
+    "grad_clip_norm": 2.0,
+    "head_lr": 0.0002018827443928985,
+    "label_smoothing_value": 0.05,
+    "unfreeze_depth": 4,
+    "warmup_epochs": 3,
+    "weight_decay": 0.00032343041046635767
+  },
+  "sampler": "tpe",
+  "space": "space_policy_mobilenetv3_small_100",
+  "min_resource_epochs": 5,
+  "max_resource_epochs": 30,
+  "wall_clock_seconds": 3271.9455049037933
+}

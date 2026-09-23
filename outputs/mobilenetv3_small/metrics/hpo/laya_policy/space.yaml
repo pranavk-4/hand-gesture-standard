@@ -1,0 +1,54 @@
+hyperband:
+  max_resource_epochs: 30
+  min_resource_epochs: 5
+  reduction_factor: 3
+search_space:
+  backbone_lr:
+    high: 0.001
+    low: 1.0e-05
+    type: log_float
+  batch_size:
+    choices:
+    - 16
+    - 32
+    - 64
+    type: categorical
+  ema_decay:
+    high: 0.999
+    low: 0.85
+    type: float
+  grad_clip_norm:
+    choices:
+    - 0
+    - 0.5
+    - 1.0
+    - 2.0
+    type: categorical
+  head_lr:
+    high: 0.01
+    low: 0.0001
+    type: log_float
+  label_smoothing_value:
+    choices:
+    - 0.0
+    - 0.05
+    - 0.1
+    - 0.2
+    type: categorical
+  unfreeze_depth:
+    high: 4
+    low: 0
+    type: int
+  warmup_epochs:
+    high: 5
+    low: 0
+    type: int
+  weight_decay:
+    high: 0.001
+    low: 1.0e-05
+    type: log_float
+study:
+  direction: maximize
+  n_trials: 6
+  pruner: hyperband
+  sampler: tpe

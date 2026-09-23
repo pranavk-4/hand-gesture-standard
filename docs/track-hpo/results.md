@@ -43,6 +43,10 @@ Install: `pip install laya`. Raw answers: `outputs/mobilenetv3_small/metrics/hpo
 
 Reading: choice answers collapse to one option (small, head_only) with near uniform spreads on 4-way unfreeze. Polarity check on T1 (stop framing vs keep framing) gives incoherent pair 0.0001 vs 0.307. Zero-shot Laya does not beat human ranges here. Matches the model card honest limit: base checkpoint near chance zero-shot, ships overconfident. Next step if pursued: log decisions with outcomes, refit temperature, or fine-tune on our trial histories before trusting it in the loop.
 
+## Laya policy study (Laya-built 9-param space, mobilenetv3, 6 trials)
+
+Laya voted all 5 new knobs in: batch_size, unfreeze_depth, grad_clip_norm, label_smoothing_value, warmup_epochs. Study tag laya_policy: best val 0.878 test 0.841, 3 complete 3 pruned. Human 4-param control bohb_low: val 0.911 test 0.899. Policy space loses by 0.033 val. New knobs all executed mechanically (batch 16/64, depth 1/3/4 ran fine). Lesson repeats: 9 params on 6 trials starves TPE. Space plus decision log: `outputs/mobilenetv3_small/metrics/hpo/laya_policy/`.
+
 ## Laya audit v2 (17 probes x base vs typed-decisions checkpoints)
 
 Extended battery adds range zoom, trial budget, failure cause, data regime routing, mid-training triage. Raw answers: `outputs/mobilenetv3_small/metrics/hpo/laya_probes/laya_probe_results_{base,typed}.json`. Score counts U2 as open (staged schedules never tested on tiny data).
